@@ -1,6 +1,9 @@
 import urllib.request
 import json
 import os
+from sqlite import Datab
+import http
+
 
 def getData(api_url):
     # set data
@@ -10,17 +13,19 @@ def getData(api_url):
 
 # get icon $ img
 
+
 def getMinapp(minapps, dir_path, qr1, qr2):
     dirpath = getDirPath(dir_path)
-
+    min = Datab()
     for minapp in minapps:
         printName(minapp['title'], minapp['content'])
+        min.insertTitle(minapp['title'])
         saveList(dirpath, minapp['title'], minapp['content'])
         minapp_path = getDirPath(dirpath+'/'+minapp['title'])+'/'
         saveText(minapp_path, minapp['title'], minapp['content'])
 
         saveIcon(minapp['icon'], minapp_path, minapp['title'])
-        print(minapp['imgs_thumb'])
+        # print(minapp['imgs_thumb'])
         saveAttr_Img(minapp['imgs_thumb'], minapp_path, minapp['title'])
 
         if(minapp['qrcode'] == STATIC_QR):
@@ -28,28 +33,38 @@ def getMinapp(minapps, dir_path, qr1, qr2):
         else:
             saveQr_Code(minapp['qrcode'], minapp_path, minapp['title'])
 
-def printName(title,content):
+
+def printName(title, content):
     print('---------------'+'\n'
-            +title+'\n'
-            +content+'\n'
-            +'---------------') 
+          + title+'\n'
+          + content+'\n'
+          + '---------------')
 
 # 返回 json 数据
+
+
 def getHjson(api_url):
     url = api_url
     url_data = urllib.request.urlopen(url).read().decode()
     return json.loads(url_data)
 
+
 def saveQr_Code(url, path, title):
     saveImg(url.strip('\"'), path, title+'_二维码_')
 
 # 写入二进制数据
+
+
 def saveImg(url, path, title):
     with open(path+title+'.jpg', 'wb') as file:
         req = urllib.request.urlopen(url)
-        buf = req.read()
-        file.write(buf)
-        file.flush()
+        try:
+            buf = req.read()
+            file.write(buf)
+            file.flush()
+        except http.client.IncompleteRead as e:
+            page = e.partial
+
 
 def saveList(path, title, content):
     with open(path+'/'+'小程序'+'.txt', 'a', encoding='utf-8') as file:
@@ -57,22 +72,30 @@ def saveList(path, title, content):
         file.flush()
 
 # 写入文本
+
+
 def saveText(path, title, content):
     with open(path+title+'.txt', 'w', encoding='utf-8') as file:
         file.writelines(title+'\n'+content+'\n')
         file.flush()
 
 # 获得单个小程序的本地文件地址
+
+
 def getDirPath(path):
     if not os.path.exists(path):
         os.makedirs(path)
     return path
 
 # 获得小程序的Icon
+
+
 def saveIcon(icon_url, path, title):
     saveImg(icon_url.strip('\"'), path, title+'_icon_')
 
 # 获得图片
+
+
 def saveAttr_Img(attr_img_urls, path, title):
     i = 0
     for attr_img_url in attr_img_urls:
@@ -80,9 +103,10 @@ def saveAttr_Img(attr_img_urls, path, title):
         i = i + 1
 
 n = 1
-API_URL = 'http://9.cn/Xcx/Index/getAppList?page='+str(n)+'&code=&status=1&order=create_time+DESC'
+API_URL = 'http://9.cn/Xcx/Index/getAppList?page=' + \
+    str(n)+'&code=&status=1&order=create_time+DESC'
 DIR_PATH = '/Users/atree/Desktop/9cn'
 STATIC_QR = '/static/common/images/default_qrcode.png'
 MINA_QR = 'https://media.ifanrusercontent.com/media/user_files/trochili/dd/2c/dd2c51444f2edd3c863a8f2671072c8f6f44633e-4892369f4bd44762ae3eef4d8897a5025ac65ad5.jpg'
 
-getMinapp(getData(API_URL),DIR_PATH,STATIC_QR,MINA_QR)
+getMinapp(getData(API_URL), DIR_PATH, STATIC_QR, MINA_QR)
