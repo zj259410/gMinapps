@@ -9,28 +9,30 @@ def getData(api_url):
     return minapps
 
 # get icon $ img
+
 def getMinapp(minapps, dir_path, qr1, qr2):
-	dirpath = getDirPath(dir_path)
+    dirpath = getDirPath(dir_path)
 
-	for minapp in minapps:
-		printName(minapp['title'],minapp['content'])
-		saveList(dirpath, minapp['title'], minapp['content'])
-		minapp_path = getDirPath(dirpath+'/'+minapp['title'])+'/'
+    for minapp in minapps:
+        printName(minapp['title'], minapp['content'])
+        saveList(dirpath, minapp['title'], minapp['content'])
+        minapp_path = getDirPath(dirpath+'/'+minapp['title'])+'/'
+        saveText(minapp_path, minapp['title'], minapp['content'])
 
-	if(minapp['qrcode'] == STATIC_QR):
-	    saveQr_Code(MINA_QR, minapp_path, minapp['title'])
-	else:
-	    saveQr_Code(minapp['qrcode'], minapp_path, minapp['title'])
+        saveIcon(minapp['icon'], minapp_path, minapp['title'])
+        print(minapp['imgs_thumb'])
+        saveAttr_Img(minapp['imgs_thumb'], minapp_path, minapp['title'])
 
-	saveText(minapp_path, minapp['title'], minapp['content'])
-	getIcon(minapp['icon'], minapp_path, minapp['title'])
-	getAttr_Img(minapp['attr_imgs'], minapp_path, minapp['title'])
+        if(minapp['qrcode'] == STATIC_QR):
+            saveQr_Code(MINA_QR, minapp_path, minapp['title'])
+        else:
+            saveQr_Code(minapp['qrcode'], minapp_path, minapp['title'])
 
 def printName(title,content):
-	print('---------------'+'\n'
-	    	+title+'\n'
-	    	+content+'\n'
-	    	+'---------------') 
+    print('---------------'+'\n'
+            +title+'\n'
+            +content+'\n'
+            +'---------------') 
 
 # 返回 json 数据
 def getHjson(api_url):
@@ -39,7 +41,7 @@ def getHjson(api_url):
     return json.loads(url_data)
 
 def saveQr_Code(url, path, title):
-    saveImg(url, path, title+'_二维码_')
+    saveImg(url.strip('\"'), path, title+'_二维码_')
 
 # 写入二进制数据
 def saveImg(url, path, title):
@@ -67,14 +69,13 @@ def getDirPath(path):
     return path
 
 # 获得小程序的Icon
-def getIcon(icon_url, path, title):
-    saveImg(icon_url, path, title+'_icon_')
+def saveIcon(icon_url, path, title):
+    saveImg(icon_url.strip('\"'), path, title+'_icon_')
 
 # 获得图片
-def getAttr_Img(attr_img_urls, path, title):
+def saveAttr_Img(attr_img_urls, path, title):
     i = 0
-    attr_img_urls_list = attr_img_urls.split(',')
-    for attr_img_url in attr_img_urls_list:
+    for attr_img_url in attr_img_urls:
         saveImg(attr_img_url, path, title+'_attr_%s' % str(i))
         i = i + 1
 
